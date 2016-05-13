@@ -1,0 +1,738 @@
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>部门管理</title>
+    <link href="http://oatest.dibabo.cn/ShopAdmin/Content/Site.css" rel="stylesheet" type="text/css" />
+    <link href="http://oatest.dibabo.cn/ShopAdmin/Content/kendo/2015.2.624/kendo.common-bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="http://oatest.dibabo.cn/ShopAdmin/Content/kendo/2015.2.624/kendo.mobile.all.min.css" rel="stylesheet" type="text/css" />
+    <link href="http://oatest.dibabo.cn/ShopAdmin/Content/kendo/2015.2.624/kendo.dataviz.min.css" rel="stylesheet" type="text/css" />
+    <link href="http://oatest.dibabo.cn/ShopAdmin/Content/kendo/2015.2.624/kendo.bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/kendo/2015.2.624/jquery.min.js"></script>
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/kendo/2015.2.624/jszip.min.js"></script>
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/kendo/2015.2.624/kendo.all.min.js"></script>
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/kendo/2015.2.624/cultures/kendo.culture.zh-CN.min.js"></script>
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/kendo/2015.2.624/messages/kendo.messages.zh-CN.min.js"></script>
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/kendo.modernizr.custom.js"></script>
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/layer/layer.js"></script>
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/base.enums.js"></script>
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/base.jquery.extension.js"></script>
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/jquery.base.ajax.js"></script>
+    <link href="http://oatest.dibabo.cn/ShopAdmin/Content/dropdowntreeview.css" rel="stylesheet" type="text/css" />
+    <script src="http://oatest.dibabo.cn/ShopAdmin/Scripts/dropdowntreeview.js"></script>
+</head>
+<body>
+
+    <div class="k-pager-wrap">
+        <div class="k-header pager-toolbar">
+
+            <a id="EditPageButton6ad00549">保存</a>
+            <script>
+
+                $(function () {
+                    $("#EditPageButton6ad00549").kendoButton({
+                        icon: "plus",
+                        click: function (e) {
+                            var validator = $("#form_EditPagedf9b9d8a").kendoValidator({
+                                messages: {
+                                    required: function (input) {
+                                        return getRequiredMsg(input);
+                                    }
+                                }
+                            }).data("kendoValidator");
+                            if (validator.validate()) {
+                                $.baseAjax.init({ url: "http://oatest.dibabo.cn/ShopAdmin/isp/isp_entity/department/SaveChanges" });
+                                var requestObj = getFormData();
+                                if (requestObj.deptID) {
+                                    var loading = $.openLoading();
+                                    $.baseAjax.doAjaxAction(requestObj, function (res) {
+                                        $.closeLoading(loading);
+                                        if (res.Success == true) {
+                                            baseNotification.success("数据保存成功"); window.setTimeout(function () {
+                                                $.refresh();
+                                            }, 300);
+                                        }
+                                        else { baseNotification.error(res.Error); }
+                                    }, function (jqXHR, textStatus, errorThrown) {
+                                        $.closeLoading(loading);
+                                        baseNotification.error("系统错误，请重试或联系管理员");
+                                    });
+                                }
+                                else { alert("请选择部门！"); return false;}
+                            }
+                        }
+                    });
+                });
+
+            </script>
+
+        </div>
+        <div class="pager-title">部门管理</div>
+
+        <form id="form_EditPagedf9b9d8a" class="pager-main-content" style="min-height:600px">
+            <table>
+
+                <tr>
+                    <th class="right-label leftpadding5 width80">选择部门</th>
+                    <td>
+                        <input class="k-textbox" id="TextBox590ce" name="TextBox590ce" style="width:120px;display:none" /><span data-for="TextBox590ce" class="k-invalid-msg"></span>
+                        <input type="hidden" id="departMentID" value="" />
+                        <input type="hidden" id="departMentName" value="" />
+                        <div id="DropDownTreeView_Departments" style="min-width:150px"></div>
+                        <script>
+                            var dept_id = "";
+                            var getDepartmentUrl = "/SperaChildrenPark/spera/common/queryDepartmentPark?dept_id=";
+                            var targetUrl = "/WWWphpsessid_url2.php?_" + Math.random();
+                            $.ajax({
+                                type: "post",
+                                url: targetUrl,
+                                async: false,
+                                success: function (res) {
+                                    if (res.status) {
+                                        var data = res.dataset[0];
+                                        dept_id = data.SHOP_DEPT_ID;
+                                        InitControls(dept_id);
+                                    }
+                                }
+                            });
+                            function InitControls(id) {
+
+                                var DepartmentsTree_DataSource = new kendo.data.HierarchicalDataSource({
+                                    transport: {
+                                        read: {
+                                            url: getDepartmentUrl + id,
+                                            //dataType: "jsonp"
+                                        }
+                                    },
+                                    schema: {
+                                        model: {
+                                            id: "id",
+                                            children: "items"
+                                        }
+                                    }
+                                });
+
+                                var Departments_DropDownTreeView = $('#DropDownTreeView_Departments').kendoDropDownTreeView({
+                                    dataTextField: "text",
+                                    dataValueField: "id",
+                                    treeview: {
+                                        loadOnDemand: false,
+                                        dataSource: DepartmentsTree_DataSource
+                                    },
+                                    template: "#= item.text # ",
+                                }).data("kendoDropDownTreeView");
+
+                                Departments_DropDownTreeView.treeview().select = function () {
+                                    var selectValue = Departments_DropDownTreeView.value();
+                                    if (selectValue != null) {
+                                        $("#departMentID").val(selectValue);
+                                        $("#departMentName").val(Departments_DropDownTreeView.text());
+                                    }
+                                }
+                            }
+                        </script>
+                    </td>
+                    <th class="right-label leftpadding5 width80">业务代码</th>
+                    <td>
+                        <!--<input class="k-textbox" id="TextBoxb35ba" name="TextBoxb35ba" style="width:120px" /><span data-for="TextBoxb35ba" class="k-invalid-msg"></span>-->
+                        <input id="Combox00f59" name="Combox00f59" style="width:120px" required="required" data-required="必填" />
+                        <span data-for="Combox00f59" class="k-invalid-msg"></span>
+                        <script type="text/javascript">
+                            $(function () {
+                                $("#Combox00f59").kendoComboBox({
+                                    dataTextField: "name",
+                                    dataValueField: "code",
+                                    height: 200,
+                                    dataSource: {
+                                      transport: {
+                                        read:"/SperaChildrenPark/spera/common/getBusinessTypeCode",
+                                      },
+                                      schema: {
+                                        data:"dataset"
+                                      },
+                                    }
+                                });
+                            });
+                        </script>
+                    </td>
+
+
+            </table>
+        </form>
+
+    </div>
+
+    <span id="baseNotification" style="display: none;"></span>
+
+    <style type="text/css">
+        /* Success template */
+        .k-widget.k-notification.k-notification-success, .k-notification-success.k-group {
+            background: rgba(0%,60%,0%,.8);
+            color: #ffffff;
+        }
+
+        /* Error template */
+        .k-widget.k-notification.k-notification-error, .k-notification-error.k-group {
+            background: rgba(100%,0%,0%,.8);
+            color: #ffffff;
+        }
+
+        /* Warning template */
+        .k-widget.k-notification.k-notification-warning, .k-notification-warning.k-group {
+            background: rgba(100%,60%,0%,.8);
+            color: #ffffff;
+        }
+
+        .notification {
+            width: 300px;
+            min-height: 100px;
+        }
+
+            .notification table td {
+                padding: 0px;
+            }
+
+            .notification .title {
+                height: 30px;
+                line-height: 28px;
+                padding-left: 20px;
+                font-size: 16px;
+                font-weight: 600;
+                border-bottom: 1px solid #fefefe;
+            }
+
+            .notification .message {
+                color: #ffffff;
+                font-size: 14px;
+                font-weight: normal;
+            }
+
+            .notification img {
+                margin: 20px;
+            }
+
+        .k-grid-content .k-autocomplete, .k-grid-content .k-combobox, .k-grid-content .k-datepicker, .k-grid-content .k-timepicker, .k-grid-content .k-datetimepicker, .k-grid-content .k-colorpicker, .k-grid-content .k-numerictextbox, .k-grid-content .k-dropdown, .k-grid-content .k-selectbox, .k-grid-content .k-textbox, .k-grid-content .k-toolbar .k-grid-content .k-split-button {
+            position: inherit;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        var baseNotification = null;
+
+        //init notification
+        $(function () {
+
+            baseNotification = $("#baseNotification").kendoNotification({
+                position: {
+                    pinned: true,
+                    bottom: 20,
+                    right: 20
+                },
+                //autoHideAfter: 2000,
+                stacking: "up",
+                animation: {
+                    open: {
+                        effects: "slideIn:left"
+                    },
+                    close: {
+                        effects: "slideIn:left",
+                        reverse: true
+                    }
+                },
+                templates: [{
+                    type: "success",
+                    template: $("#successTemplate").html()
+                }, {
+                    type: "error",
+                    template: $("#errorTemplate").html()
+                },
+                {
+                    type: "warning",
+                    template: $("#warningTemplate").html()
+                }]
+
+            }).data("kendoNotification");
+
+            baseNotification.success = function (message) {
+
+                removeShowedNotifications(this);
+
+                this.show({ message: message }, notificationTypes.success);
+            };
+
+            baseNotification.error = function (message, title) {
+
+                removeShowedNotifications(this);
+
+                if (title == undefined)
+                    title = notificationTitles.Error;
+
+                this.show({ title: title, message: message }, notificationTypes.error);
+            };
+
+            baseNotification.warning = function (message, title) {
+
+                removeShowedNotifications(this);
+
+                if (title == undefined)
+                    title = notificationTitles.Warning;
+
+                this.show({ title: title, message: message }, notificationTypes.warning);
+            };
+
+            //before show a new notification, must remove already show notifications
+            function removeShowedNotifications(notification) {
+                // since there is no way for the user to hide notifications,
+                // the following expression will return two elements, no matter when it is executed
+                var elements = notification.getNotifications();
+
+                // remove the two messages from the DOM
+                elements.each(function () {
+                    $(this).parent().remove();
+                });
+            }
+
+        });
+
+        var editPage = JSON.parse('{"EntityId":"88f9a100-3d4e-41b1-b2c1-59789c064531","EntityName":"department","Fields":[{"FieldName":"deptName","UIComponentType":1,"FormInputUIId":"TextBox590ce","DefaultDislayProperty":null,"ParentForeignKeyPropertyName":null,"Multiple":false},{"FieldName":"business_type_code","UIComponentType":5,"FormInputUIId":"Combox00f59","DefaultDislayProperty":null,"ParentForeignKeyPropertyName":null,"Multiple":false}]}');
+
+        function getFormData() {
+
+            var entityData = new Object();
+            if (editPage && editPage.Fields.length > 0) {
+
+                var id = $.getQueryString("id");
+                if (id && id != "00000000-0000-0000-0000-000000000000" && $.isGuid(id)) {
+                    entityData.ID = id;
+                }
+                else {
+                    entityData.EntityAvailableState = "Valid";
+                }
+
+                $.each(editPage.Fields, function (index, field) {
+
+                    var fieldInputId = field.FormInputUIId;
+                    var fieldValue;
+
+                    switch (String(field.UIComponentType)) {
+                        case "1":
+                        case "7":
+                            fieldValue = $("#" + fieldInputId).val();
+                            break;
+
+                        case "2":
+                            fieldValue = $("#" + fieldInputId).data("kendoNumericTextBox").value();
+                            break;
+
+                        case "3":
+                            fieldValue = $("#" + fieldInputId).data("kendoDatePicker").value();
+                            break;
+
+                        case "5":
+                            fieldValue = $("#" + fieldInputId).data("kendoComboBox").value();
+                            break;
+
+                        case "4":
+                            var selectItems = $("#" + fieldInputId + "_taglist li");
+                            if (selectItems && selectItems.length > 0) {
+                                fieldValue = $(selectItems[0]).data("entityid");
+                            }
+                            break;
+
+                        case "8":
+                            fieldValue = $("#" + fieldInputId).data("kendoEditor").value();
+                            break;
+
+                        case "6":
+                            var childGrid = $("#" + fieldInputId).getKendoGrid();
+                            var childGridData = childGrid.dataSource.data();
+                            //处理删除的数据
+                            var destroyedData = childGrid.dataSource._destroyed;
+                            for (var i = 0; i < destroyedData.length; i++) {
+                                var curItemData = destroyedData[i];
+                                if (curItemData["EntityAvailableState"] == "Valid") {
+
+                                    curItemData["EntityAvailableState"] = "Deleted";
+
+                                    childGridData.push(curItemData);
+                                }
+                            }
+
+                            if (field.ParentForeignKeyPropertyName) {
+                                for (var i = 0; i < childGridData.length; i++) {
+                                    childGridData[i][field.ParentForeignKeyPropertyName] = entityData.ID;
+                                }
+                            }
+
+                            //处理外键字段
+                            for (var i = 0; i < childGrid.columns.length; i++) {
+                                var curColumn = childGrid.columns[i];
+                                if (curColumn.field != "ID"
+                                    && curColumn.hidden == true) {
+
+                                    for (var j = 0; j < childGridData.length; j++) {
+                                        var curItemData = childGridData[j];
+
+                                        var tempEntityField = curColumn.field.substring(0, curColumn.field.length - 2);
+                                        var tempEntityData = curItemData[tempEntityField];
+                                        if (tempEntityData) {
+                                            curItemData[curColumn.field] = tempEntityData["ID"];
+                                        }
+
+                                        curItemData[tempEntityField] = null;
+                                    }
+                                }
+                            }
+
+                            fieldValue = childGridData;
+
+                            break;
+
+                        case "9":
+                            var strUploadFiles = $("#" + fieldInputId + "_hdnfiles").val();
+                            if (strUploadFiles) {
+                                var oUploadFiles = JSON.parse(strUploadFiles);
+
+                                if (field.Multiple == true) {//多选的列表附件
+
+                                    var parentFiles = new Array();
+
+                                    $.each(oUploadFiles, function (index, item) {
+
+                                        var parentFile = new Object();
+
+                                        if (item.ParentID != null) {
+                                            parentFile.ID = item.ParentID;
+                                        }
+
+                                        parentFile[field.ParentForeignKeyPropertyName] = entityData.ID;
+
+                                        var basefile = new Object();
+
+                                        if (item.ID != null) {
+
+                                            basefile.ID = item.ID;
+                                            parentFile["base_oss_fileID"] = item.ID;
+
+                                            if (item.EntityAvailableState == "Deleted") {
+                                                parentFile.EntityAvailableState = "Deleted";
+                                                basefile.EntityAvailableState = "Deleted";
+                                            }
+                                            else {
+                                                parentFile.EntityAvailableState = "Valid";
+                                                basefile.EntityAvailableState = "Valid";
+                                            }
+                                        }
+                                        else {
+                                            if (entityData.ID != null)
+                                                parentFile.EntityAvailableState = 0;
+                                            else
+                                                parentFile.EntityAvailableState = "Valid";
+
+                                            basefile.ID = "00000000-0000-0000-0000-000000000000";
+
+                                            parentFile["base_oss_fileID"] = basefile.ID;
+
+                                            basefile.url = item.Url;
+                                            basefile.osskey = item.Key;
+                                            basefile.file_size = item.Size;
+                                            basefile.file_name = item.Name;
+                                            basefile.file_type = item.ContentType;
+                                            if (entityData.ID != null)
+                                                basefile.EntityAvailableState = 0;
+                                            else
+                                                basefile.EntityAvailableState = "Valid";
+                                        }
+
+                                        parentFile["base_oss_file"] = basefile;
+
+                                        parentFiles.push(parentFile);
+                                    });
+
+                                    fieldValue = parentFiles;
+                                }
+                                else {
+                                    var oUploadFile = oUploadFiles[0];
+                                    var basefile = new Object();
+
+                                    if (oUploadFile.ID != null) {
+                                        basefile.ID = oUploadFile.ID;
+                                        basefile.EntityAvailableState = oUploadFile.EntityAvailableState;
+                                    }
+                                    else {
+                                        basefile.ID = $.newGuid();
+                                        basefile.EntityAvailableState = 0;
+                                    }
+
+                                    entityData[field.FieldName + "ID"] = basefile.ID;//外键ID赋值
+
+                                    basefile.url = oUploadFile.Url;
+                                    basefile.osskey = oUploadFile.Key;
+                                    basefile.file_size = oUploadFile.Size;
+                                    basefile.file_name = oUploadFile.Name;
+                                    basefile.file_type = oUploadFile.ContentType;
+                                    if (entityData.ID == null)
+                                        basefile.EntityAvailableState = "Valid";
+
+                                    fieldValue = basefile;
+                                }
+                            }
+                            else
+                                entityData[field.FieldName + "ID"] = null; //上传控件属性的外键ID设置为null
+
+                            break;
+                    }
+
+                    entityData[field.FieldName] = fieldValue;
+                });
+            }
+            var departmentID = $("#departMentID").val();
+            if (departmentID) {
+                entityData.deptID = departmentID;
+                entityData.deptName = $("#departMentName").val();
+            }
+
+            return entityData;
+        }
+
+        function getRequiredMsg(input) {
+            return input.data("required");
+        }
+
+        function bindFormData() {
+            var id = $.getQueryString("id");
+            if (id && id != "00000000-0000-0000-0000-000000000000") {
+
+                var loading = $.openLoading();
+
+                var url = "http://oatest.dibabo.cn/ShopAdmin/webapi/department($id)?$select=ID,deptID,deptName,business_type_code";
+                url = url.replace("$id", id);
+
+                $.baseAjax.init({ url: url, type: "GET" });
+                $.baseAjax.doAjaxAction(null,
+                    function (data) {
+
+                        $.closeLoading(loading);
+
+                        var Departments_DropDownTreeView = $('#DropDownTreeView_Departments').data("kendoDropDownTreeView");
+                        if (Departments_DropDownTreeView) {
+                            Departments_DropDownTreeView.value(data.deptID);
+                        }
+                        $("#departMentID").val(data.deptID);
+                        $("#departMentName").val(data.deptName);
+
+                        if (editPage && editPage.Fields.length > 0) {
+
+                            $.each(editPage.Fields, function (index, field) {
+
+                                var fieldInputId = field.FormInputUIId;
+                                var fieldValue;
+
+                                switch (String(field.UIComponentType)) {
+                                    case "1":
+                                    case "7":
+                                        $("#" + fieldInputId).val(data[field.FieldName]);
+                                        break;
+
+                                    case "2":
+                                        $("#" + fieldInputId).data("kendoNumericTextBox").value(data[field.FieldName]);
+                                        break;
+
+                                    case "3":
+                                        $("#" + fieldInputId).data("kendoDatePicker").value(data[field.FieldName]);
+                                        break;
+
+                                    case "4":
+
+                                        var tempFieldName = field.FieldName.substring(0, field.FieldName.length - 2);
+                                        var curItemData = data[tempFieldName];
+                                        var selectItems = new Array();
+                                        var msSelectHtml = "<li class=\"k-button\" data-entityid=\"" + curItemData["ID"] + "\">"
+                                            + "<span>" + curItemData[field.DefaultDislayProperty] + "</span>"
+                                            + "<span class=\"k-select\">"
+                                            + "<a class=\"ms-delete\" href=\"javascript:void(0);\">"
+                                            + "<span class=\"k-icon k-i-close\">delete</span></a>"
+                                            + "</span>"
+                                            + "</li>";
+
+                                        selectItems.push({ ID: curItemData["ID"] });
+
+                                        $("#" + fieldInputId + "_taglist").append(msSelectHtml);
+
+                                        $("#" + fieldInputId + "_hdnValues").val(JSON.stringify(selectItems));
+
+                                        $(".ms-delete").bind("click", function (e) {
+                                            $(this).parent().parent().remove();
+                                            e.stopPropagation();
+                                        });
+
+                                        break;
+
+                                    case "5":
+                                        $("#" + fieldInputId).data("kendoComboBox").value(data[field.FieldName]);
+                                        break;
+                                    case "8":
+                                        $("#" + fieldInputId).data("kendoEditor").value(data[field.FieldName]);
+                                        break;
+
+                                    case "6":
+                                        var gridData = data[field.FieldName];
+                                        $("#" + fieldInputId).data("kendoGrid").dataSource.data(gridData);
+                                        break;
+
+                                    case "9":
+
+                                        var fieldData = data[field.FieldName];
+
+                                        if (fieldData) {
+
+                                            var parentEle = $("#" + fieldInputId + "-wrapper");
+                                            var uploaderEle = $("#" + fieldInputId).getKendoUpload();
+
+                                            var uploadedFiles = new Array();
+                                            var initFiles = new Array();
+
+                                            var uploaderConfig = uploaderEle.options;
+
+                                            if (field.Multiple == true) {
+
+                                                if (fieldData.length > 0) {
+
+                                                    $.each(fieldData, function (i, file) {
+
+                                                        var baseFile = file["base_oss_file"];
+                                                        var curFile = new Object();
+                                                        curFile.ID = baseFile.ID;
+                                                        curFile.ParentID = file.ID;
+                                                        curFile.Name = baseFile.file_name;
+                                                        curFile.Key = baseFile.osskey;
+                                                        curFile.ContentType = baseFile.file_type;
+                                                        curFile.Size = baseFile.file_size;
+                                                        curFile.Url = baseFile.url;
+                                                        curFile.ETag = baseFile.etag;
+                                                        curFile.EntityAvailableState = "Valid";
+
+                                                        uploadedFiles.push(curFile);
+
+                                                        var initFile = new Object();
+                                                        initFile.name = baseFile.file_name;
+                                                        initFile.size = parseInt(baseFile.file_size);
+                                                        initFile.extension = baseFile.file_name.substring(baseFile.file_name.lastIndexOf("."));
+                                                        initFile.key = baseFile.osskey;
+                                                        initFile.url = baseFile.url;
+
+                                                        initFiles.push(initFile);
+                                                    });
+                                                }
+                                            }
+                                            else {
+                                                var baseFile = fieldData;
+                                                var curFile = new Object();
+                                                curFile.ID = baseFile.ID;
+                                                curFile.Name = baseFile.file_name;
+                                                curFile.Key = baseFile.osskey;
+                                                curFile.ContentType = baseFile.file_type;
+                                                curFile.Size = baseFile.file_size;
+                                                curFile.Url = baseFile.url;
+                                                curFile.ETag = baseFile.etag;
+                                                curFile.EntityAvailableState = "Valid";
+
+                                                uploadedFiles.push(curFile);
+
+                                                var initFile = new Object();
+                                                initFile.name = baseFile.file_name;
+                                                initFile.size = parseInt(baseFile.file_size);
+                                                initFile.extension = baseFile.file_name.substring(baseFile.file_name.lastIndexOf("."));
+                                                initFile.key = baseFile.osskey;
+                                                initFile.url = baseFile.url;
+
+                                                initFiles.push(initFile);
+                                            }
+
+                                            //重建uploader控件
+                                            var inputHtml = '<input type="file" id="' + fieldInputId + '" name="' + fieldInputId + '" />';
+
+                                            parentEle.empty();
+                                            parentEle.html(inputHtml);
+                                            //注入初始化文件列表
+                                            uploaderConfig.files = initFiles;
+                                            //重新初始化uploader控件
+                                            $("#" + fieldInputId).kendoUpload(uploaderConfig);
+
+                                            $("#" + fieldInputId + "_hdnfiles").val(JSON.stringify(uploadedFiles));
+                                        }
+
+                                        break;
+                                }
+                            });
+                        }
+                    },
+                    function (jqXHR, textStatus, errorThrown) {
+                        $.closeLoading(loading);
+                        baseNotification.error("系统错误，请重试或联系管理员")
+                    });
+            }
+        }
+
+        $(function () {
+            bindFormData();
+        });
+
+    </script>
+
+    <script id="successTemplate" type="text/x-kendo-template">
+        <div class="notification">
+            <div class="title">操作成功</div>
+            <table class="width100p">
+                <tr>
+                    <td class="width80">
+                        <img src="http://oatest.dibabo.cn/ShopAdmin/Images/icon-success.png" />
+                    </td>
+                    <td class="message left-td">
+                        #= message #
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </script>
+
+    <script id="errorTemplate" type="text/x-kendo-template">
+        <div class="notification">
+            <div class="title">#= title #</div>
+            <table class="width100p">
+                <tr>
+                    <td class="width80">
+                        <img src="http://oatest.dibabo.cn/ShopAdmin/Images/icon-error.png" />
+                    </td>
+                    <td class="message left-td">
+                        #= message #
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </script>
+
+    <script id="warningTemplate" type="text/x-kendo-template">
+        <div class="notification">
+            <div class="title">#= title #</div>
+            <table class="width100p">
+                <tr>
+                    <td class="width80">
+                        <img src="http://oatest.dibabo.cn/ShopAdmin/Images/icon-alert.png" />
+                    </td>
+                    <td class="message left-td">
+                        #= message #
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </script>
+
+</body>
+</html>
+
+
